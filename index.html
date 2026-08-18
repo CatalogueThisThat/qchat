@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#070707" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>QTalk</title>
+    <link rel="icon" type="image/png" href="/qchat/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="/qchat/assets/index-DKzNX0B3.js"></script>
+    <link rel="stylesheet" crossorigin href="/qchat/assets/index-BYnrtuaJ.css">
+  </head>
+  <body>
+    <div id="app">
+      <section id="splash" class="splash" aria-hidden="false">
+        <div class="splash-pattern"></div>
+        <div class="splash-stack" aria-hidden="true">
+          <span>TALK</span>
+          <span>TALK</span>
+          <span>TALK</span>
+          <span>TALK</span>
+        </div>
+        <p class="splash-brand">QTalk</p>
+      </section>
+
+      <section id="pair" class="pair hidden">
+        <div class="pair-card">
+          <img class="pair-mark" src="/qchat/logo.png" alt="" />
+          <h1>Link your phone</h1>
+          <p class="pair-lead">Scan to use QTalk on this device — same chats, coral skin, no WhatsApp app needed.</p>
+          <ol class="pair-steps">
+            <li>Phone: <strong>Settings → Linked devices → Link a device</strong></li>
+            <li>Scan this code with that screen — not the normal camera, not chat QR</li>
+          </ol>
+          <div class="qr-wrap">
+            <img id="qr" alt="Link QR code" width="512" height="512" />
+            <div id="qr-wait" class="qr-wait">Waiting for code…</div>
+          </div>
+          <button id="refresh-qr" type="button" class="refresh-qr">Refresh QR</button>
+          <details class="pair-alt" open>
+            <summary>Link with phone number instead</summary>
+            <form id="pair-phone-form" class="pair-phone">
+              <label class="country-field">
+                <span class="sr-only">Country</span>
+                <select id="country" aria-label="Country">
+                  <option value="44" selected>🇬🇧 UK (+44)</option>
+                  <option value="1">🇺🇸 US/CA (+1)</option>
+                  <option value="353">🇮🇪 IE (+353)</option>
+                  <option value="61">🇦🇺 AU (+61)</option>
+                  <option value="64">🇳🇿 NZ (+64)</option>
+                  <option value="49">🇩🇪 DE (+49)</option>
+                  <option value="33">🇫🇷 FR (+33)</option>
+                  <option value="34">🇪🇸 ES (+34)</option>
+                  <option value="39">🇮🇹 IT (+39)</option>
+                  <option value="31">🇳🇱 NL (+31)</option>
+                  <option value="91">🇮🇳 IN (+91)</option>
+                  <option value="234">🇳🇬 NG (+234)</option>
+                  <option value="27">🇿🇦 ZA (+27)</option>
+                  <option value="55">🇧🇷 BR (+55)</option>
+                </select>
+              </label>
+              <input
+                id="pair-phone"
+                type="tel"
+                inputmode="numeric"
+                placeholder="7123 456789"
+                autocomplete="tel-national"
+              />
+              <button id="pair-submit" type="submit">Get code</button>
+            </form>
+            <p class="pair-hint">Enter your mobile number without the country code. Leading 0 is fine.</p>
+            <p id="pair-code" class="pair-code hidden"></p>
+            <p id="pair-error" class="pair-error hidden"></p>
+          </details>
+          <p class="pair-note">Session stays on this machine only.</p>
+          <details class="debug-panel">
+            <summary>Debug</summary>
+            <div id="debug-meta" class="debug-meta"></div>
+            <pre id="debug-log" class="debug-log"></pre>
+          </details>
+        </div>
+      </section>
+
+      <section id="shell" class="shell hidden">
+        <aside class="sidebar">
+          <header class="sidebar-head">
+            <div class="brand">
+              <img src="/qchat/logo.png" alt="" />
+              <span>QTalk</span>
+            </div>
+            <div class="sidebar-actions">
+              <button id="new-chat-btn" class="ghost tap" type="button" title="New chat">New</button>
+              <button id="logout" class="ghost tap" title="Unlink">Unlink</button>
+            </div>
+          </header>
+
+          <nav class="sidebar-tabs" aria-label="Main navigation">
+            <button id="tab-chats" class="sidebar-tab active tap" type="button" data-tab="chats">Chats</button>
+            <button id="tab-status" class="sidebar-tab tap" type="button" data-tab="status">Status</button>
+          </nav>
+
+          <div id="sidebar-chats" class="sidebar-panel">
+            <div class="search">
+              <input id="search" type="search" placeholder="Search chats" autocomplete="off" />
+            </div>
+            <div id="new-chat" class="new-chat hidden">
+              <p class="new-chat-title">New message</p>
+              <input id="new-chat-name" type="text" placeholder="Name (optional)" autocomplete="name" />
+              <input id="new-chat-phone" type="tel" placeholder="Phone with country code" autocomplete="tel" />
+              <p id="new-chat-error" class="new-chat-error hidden"></p>
+              <div class="new-chat-actions">
+                <button id="new-chat-cancel" class="ghost tap" type="button">Cancel</button>
+                <button id="new-chat-go" class="tap" type="button">Message</button>
+              </div>
+            </div>
+            <div id="chat-list" class="chat-list"></div>
+          </div>
+
+          <div id="sidebar-status" class="sidebar-panel hidden">
+            <div class="status-panel">
+              <div class="status-compose">
+                <button id="status-add-photo" class="status-compose-btn tap" type="button">Photo</button>
+                <input id="status-text" class="status-text-input" type="text" maxlength="700" placeholder="Write a status…" autocomplete="off" />
+                <button id="status-post" class="status-compose-btn primary tap" type="button">Post</button>
+                <input id="status-photo-input" type="file" accept="image/*" hidden />
+              </div>
+              <p id="status-error" class="status-error hidden" role="alert"></p>
+              <div id="status-list" class="status-list"></div>
+              <p id="status-empty" class="status-empty muted">No status updates yet. When contacts post, they’ll show up here.</p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div id="empty" class="empty">
+            <div class="empty-icon-wrap">
+              <img src="/qchat/logo.png" alt="" />
+            </div>
+            <h2>QTalk</h2>
+            <p>Pick a conversation to start messaging.</p>
+            <p class="empty-hint">Your chats sync from your linked phone.</p>
+          </div>
+
+          <div id="thread" class="thread hidden">
+            <header class="thread-head">
+              <button id="thread-back" class="icon-btn thread-back tap" type="button" aria-label="Back to chats">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button id="thread-info-trigger" class="thread-identity tap" type="button" aria-label="Contact info">
+                <div id="thread-avatar" class="avatar thread-avatar">?</div>
+                <div class="thread-identity-text">
+                  <h2 id="thread-title">Chat</h2>
+                  <p id="thread-sub" class="muted"></p>
+                </div>
+              </button>
+              <div class="thread-actions">
+                <button id="voice-call-btn" class="icon-btn tap" type="button" title="Voice call" aria-label="Voice call">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button id="video-call-btn" class="icon-btn tap" type="button" title="Video call" aria-label="Video call">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M23 7l-7 5 7 5V7z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.75"/>
+                  </svg>
+                </button>
+                <button id="thread-menu-btn" class="icon-btn tap" type="button" title="Chat info" aria-label="Chat info">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+                  </svg>
+                </button>
+              </div>
+            </header>
+
+            <div id="messages" class="messages"></div>
+
+            <div id="sticker-panel" class="sticker-panel hidden">
+              <div class="sticker-panel-head">
+                <strong>Stickers</strong>
+                <div class="sticker-panel-actions">
+                  <button id="sticker-add-btn" type="button" class="ghost tap">Add file</button>
+                  <button id="sticker-close" type="button" class="ghost tap">Close</button>
+                </div>
+              </div>
+              <div id="sticker-grid" class="sticker-grid"></div>
+              <p id="sticker-empty" class="sticker-empty hidden">No saved stickers yet — open chats with stickers or add a .webp/.png</p>
+            </div>
+
+            <div id="compose-attach" class="compose-attach hidden">
+              <div id="compose-attach-preview-wrap" class="compose-attach-preview-wrap hidden">
+                <img id="compose-attach-preview" alt="" />
+              </div>
+              <div id="compose-attach-chip" class="compose-attach-chip hidden">
+                <span class="compose-attach-chip-icon" aria-hidden="true"></span>
+                <span id="compose-attach-name" class="compose-attach-name"></span>
+              </div>
+              <div class="compose-attach-meta">
+                <span id="compose-attach-label">Attached</span>
+                <button id="compose-attach-clear" type="button" class="ghost tap">Remove</button>
+              </div>
+            </div>
+
+            <div id="attach-menu" class="attach-menu hidden" role="menu" aria-label="Attach">
+              <button type="button" class="attach-menu-item tap" data-kind="image" role="menuitem">
+                <span class="attach-menu-icon photo" aria-hidden="true"></span>
+                <span>Photo</span>
+              </button>
+              <button type="button" class="attach-menu-item tap" data-kind="video" role="menuitem">
+                <span class="attach-menu-icon video" aria-hidden="true"></span>
+                <span>Video</span>
+              </button>
+              <button type="button" class="attach-menu-item tap" data-kind="file" role="menuitem">
+                <span class="attach-menu-icon doc" aria-hidden="true"></span>
+                <span>Document</span>
+              </button>
+              <button type="button" class="attach-menu-item tap" data-kind="audio" role="menuitem">
+                <span class="attach-menu-icon audio" aria-hidden="true"></span>
+                <span>Audio</span>
+              </button>
+              <button type="button" class="attach-menu-item tap" data-kind="sticker" role="menuitem">
+                <span class="attach-menu-icon sticker" aria-hidden="true"></span>
+                <span>Sticker</span>
+              </button>
+            </div>
+
+            <form id="composer" class="composer">
+              <input id="photo-input" type="file" accept="image/*,image/jpeg,image/png,image/webp,image/heic,.jpg,.jpeg,.png,.webp,.heic" hidden />
+              <input id="media-input" type="file" accept="*/*" hidden />
+              <input id="sticker-file-input" type="file" accept="image/webp,image/png,image/jpeg,.webp,.png" hidden />
+              <button id="photo-btn" type="button" class="icon-btn tap" title="Attach" aria-label="Attach" aria-haspopup="menu" aria-expanded="false">
+                <span aria-hidden="true">＋</span>
+              </button>
+              <button id="sticker-btn" type="button" class="icon-btn tap" title="Stickers" aria-label="Stickers">
+                <span aria-hidden="true">▣</span>
+              </button>
+              <input id="compose-input" type="text" placeholder="Message" autocomplete="off" enterkeyhint="send" />
+              <button type="submit" class="tap">Send</button>
+            </form>
+          </div>
+        </main>
+
+        <div id="sync-overlay" class="sync-overlay hidden" aria-live="polite">
+          <div class="sync-scrim"></div>
+          <div class="sync-card">
+            <div class="sync-pattern" aria-hidden="true"></div>
+            <div class="sync-stack" aria-hidden="true">
+              <span>TALK</span>
+              <span>TALK</span>
+              <span>TALK</span>
+              <span>TALK</span>
+            </div>
+            <p class="sync-brand">QTalk</p>
+            <p id="sync-status" class="sync-status">Loading chats…</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chat info sheet -->
+      <div id="chat-info" class="sheet hidden" aria-hidden="true">
+        <div id="chat-info-scrim" class="sheet-scrim"></div>
+        <div class="sheet-panel chat-info-panel" role="dialog" aria-labelledby="info-name">
+          <div class="sheet-handle" aria-hidden="true"></div>
+          <button id="chat-info-close" class="sheet-close tap" type="button" aria-label="Close">✕</button>
+          <div id="info-avatar" class="info-avatar avatar">?</div>
+          <h2 id="info-name">Contact</h2>
+          <p id="info-phone" class="info-phone muted"></p>
+          <div id="info-rename" class="info-rename">
+            <label class="sr-only" for="info-name-input">Contact name</label>
+            <input id="info-name-input" class="info-name-input" type="text" maxlength="64" placeholder="Contact name" autocomplete="off" />
+            <button id="info-rename-btn" class="info-rename-btn tap" type="button">Save name</button>
+          </div>
+          <div class="info-actions">
+            <button id="info-voice-btn" class="info-action tap" type="button">
+              <span class="info-action-icon voice" aria-hidden="true"></span>
+              <span>Voice</span>
+            </button>
+            <button id="info-video-btn" class="info-action tap" type="button">
+              <span class="info-action-icon video" aria-hidden="true"></span>
+              <span>Video</span>
+            </button>
+          </div>
+          <div class="info-section">
+            <h3>About</h3>
+            <p id="info-about" class="muted">End-to-end encrypted messaging via your linked phone.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Call overlay -->
+      <div id="call-overlay" class="call-overlay hidden" aria-hidden="true">
+        <div class="call-backdrop"></div>
+        <div class="call-card">
+          <div id="call-avatar" class="call-avatar avatar pulse">?</div>
+          <p id="call-status" class="call-status">Calling…</p>
+          <h2 id="call-name">Contact</h2>
+          <p id="call-sub" class="call-sub muted">Voice call</p>
+          <p id="call-timer" class="call-timer hidden">00:00</p>
+          <div id="call-media" class="call-media hidden" aria-hidden="true">
+            <video id="call-remote-video" class="call-video remote" playsinline autoplay></video>
+            <video id="call-local-video" class="call-video local" playsinline autoplay muted></video>
+          </div>
+          <div id="call-actions-outgoing" class="call-actions">
+            <button id="call-end-btn" class="call-btn end tap" type="button" aria-label="End call">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="1.75"/>
+              </svg>
+            </button>
+          </div>
+          <div id="call-actions-incoming" class="call-actions incoming hidden">
+            <button id="call-reject-btn" class="call-btn reject tap" type="button" aria-label="Decline">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72" stroke="currentColor" stroke-width="1.75"/>
+              </svg>
+              <span>Decline</span>
+            </button>
+            <button id="call-accept-btn" class="call-btn accept tap" type="button" aria-label="Accept">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72" stroke="currentColor" stroke-width="1.75"/>
+              </svg>
+              <span>Accept</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="./config.js"></script>
+  </body>
+</html>
